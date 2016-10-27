@@ -1,0 +1,93 @@
+---
+title: "Favorite Functions"
+author: "Thuy Quach"
+date: "10/27/2016"
+output: html_document
+---
+
+## I. Set up and prepare dataset:
+
+### 1. Set up Knitr
+
+```{r Set up Knitr, messages=FALSE}
+# Set up knitr to no warning message, make the figure fit to the text
+knitr::opts_chunk$set(fig.width=12, fig.height=8, fig.path='Figs/',
+echo=FALSE, warning=FALSE, message=FALSE)      
+```
+
+
+### 2. Load dataset 
+#### csv
+
+```{r Load_the_Data}
+# Load the Data
+getwd()
+setwd('~/')
+redwine <- read.csv(file = 'myfile.csv', sep = ",", header = TRUE) 
+```
+
+### 3. Summarize dataset
+
+```{r Summarize dataset}
+length(mydata$myvar)
+names(mydata) # name of variables
+str(mydata) # data types
+summary(mydata) # statiscal summary of data
+
+```
+
+
+### 4. Remove NA and empty value:
+
+```{r Remove NA and empty value}
+cleaned_data <- na.omit(mydata)
+
+```
+
+### 5. Outlier calculation:
+
+```{r Outlier calculation}
+#lower and upper quantile
+lowerq = quantile(mydata$myvar)[2]
+upperq = quantile(mydata$myvar)[4]
+iqr = upperq - lowerq 
+#identify mild outliers
+mild.threshold.upper = upperq + (1.5*iqr)
+mild.threshold.lower = lowerq - (1.5*iqr)
+
+```
+### 6. Melt and cast data
+
+```{r Melt data}
+mdata <- melt(mydata, id.vars = c("id", "myvar"))
+```
+
+```{r Cast data}
+# cast the melted data
+# cast(data, formula, function) 
+subjmeans <- cast(mdata, id~variable, mean)
+timemeans <- cast(mdata, time~variable, mean)
+```
+
+
+### 7. Mean of all variables grouped by a variable of interest
+
+Mean is important value to investigate data. Let's write a function to calculate the mean of all variables grouped by a variable of interest.
+
+```{r}
+GroupAndMean <- function(mydata, myvar){
+  # Compute the mean of all variables grouped by a variable of interest.
+  #
+  # Args:
+  #    data    : Input data which group_by and mean are to be calculated.
+  #    variable: The variable of interest which data is grouped by.
+  # Returns:
+  #    The mean of all other variables in the data grouped by the variable.
+  data %>%
+    group_by_(.dots = myvar) %>%
+    summarise_each(funs(mean))
+}
+```
+
+## II. Unvariate Analysis:
+
